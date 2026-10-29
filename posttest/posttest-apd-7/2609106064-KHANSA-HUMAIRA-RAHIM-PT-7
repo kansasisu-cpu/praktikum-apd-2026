@@ -1,0 +1,670 @@
+import os
+
+koleksi_dvd = {
+    "X001" : {"judul" : "I Origins", "genre" : "Sci-Fi", "tahun" : 2014, "harga" : 3000, "stok" : 2},
+    "X002" : {"judul" : "The Notebook", "genre" : "Romance", "tahun" : 2004, "harga" : 5000, "stok" : 5},
+    "X003" : {"judul" : "Vivarium", "genre" : "Horror", "tahun" : 2019, "harga" : 3000, "stok" : 3},
+    "X004" : {"judul" : "The Housemaid", "genre" : "Thriller", "tahun" : 2025, "harga" : 8000, "stok" : 6},
+    "X005" : {"judul" : "The Shadow Strays", "genre" : "Action", "tahun" : 2024, "harga" : 4000, "stok" : 3},
+    "X006" : {"judul" : "(500) Days of Summer", "genre" : "Rom-Com", "tahun" : 2009, "harga" : 8000, "stok" : 7},
+    "X007" : {"judul" : "HxH, The Last Mission", "genre" : "Anime", "tahun" : 2013, "harga" : 4000, "stok" : 10},
+    "X008" : {"judul" : "DC, The Scarlet Bullet", "genre" : "Anime", "tahun" : 2021, "harga" : 3000, "stok" : 5},
+    "X009" : {"judul" : "The Conjuring", "genre" : "Horror", "tahun" : 2013, "harga" : 8000, "stok" : 11},
+    "X010" : {"judul" : "Hereditary", "genre" : "Horror", "tahun" : 2018, "harga" : 8000, "stok" : 7}
+}
+
+data_akun = {
+    "kansa" : {"password" : "64", "peran" : "admin"}
+}
+
+data_penyewa = {}
+data_transaksi = {}
+
+nomor_penyewa = 1
+nomor_transaksi = 1
+
+def clear_terminal():
+    os.system("cls")
+
+def enter(pesan="Tekan Enter untuk kembali..."):
+    input("\n" + pesan)
+
+def input_teks(pesan):
+    teks = input(pesan).strip() 
+
+    if teks == "":
+        raise ValueError("Input tidak boleh kosong!")
+    
+    return teks
+
+def input_angka(pesan, min = 0, boleh_kosong = False):
+    teks = input(pesan).strip()
+
+    if teks == "":
+        if boleh_kosong:
+            return None
+        raise ValueError("Input tidak boleh kosong!")
+    
+    if not teks.isdigit():
+        raise ValueError("Input harus berupa angka bulat positif!")
+    
+    nilai = int(teks)
+
+    if nilai < min:
+        raise ValueError(f"Nilai minimal yang diperbolehkan adalah {min}!")
+    
+    return nilai
+
+def total_harga(harga, jumlah, durasi):
+    return harga * jumlah * durasi
+
+def konfirmasi(pesan):
+    jawab = input("\n" + pesan + " (ya/tidak): ").strip().lower()
+
+    if jawab == "ya":
+        return True
+    
+    if jawab == "tidak":
+        return False
+    
+    print("Pilihan tidak valid! Masukkan 'ya' atau 'tidak'.")
+    return konfirmasi(pesan)
+
+def register():
+    clear_terminal()
+    try:
+        print("========= REGISTER =========")
+        username_baru = input_teks("Buat Username: ").lower()
+        password_baru = input_teks("Buat Password: ").lower()
+        print("============================")
+        if username_baru in data_akun:
+            raise ValueError("Username sudah terpakai!")
+        
+    except ValueError as e:
+        print(f"\n{e}")
+
+    else:
+        data_akun[username_baru] = {"password": password_baru, "peran": "pengguna"}
+        print("\nRegister berhasil! Silakan login.")
+
+    finally:
+        enter("Tekan Enter untuk kembali...")
+
+def login():
+    clear_terminal()
+    hasil = None
+    try:
+        print("========== LOGIN ==========")
+        username = input_teks("Username: ").lower()
+        password = input_teks("Password: ").lower()
+        print("============================")
+
+        akun = data_akun[username]
+
+        if akun["password"] != password:
+            raise ValueError("Password salah! Silahkan login ulang.")
+        
+    except KeyError:
+        print("\nAkun tidak terdaftar! Silahkan register.")
+        enter("Tekan Enter untuk kembali ke menu utama...")
+
+    except ValueError as e:
+        print(f"\n{e}")
+        enter("Tekan Enter untuk kembali ke menu utama...")
+
+    else:
+        hasil = (username, akun["peran"])
+
+    return hasil
+
+def tampilkan_koleksi():
+    if len(koleksi_dvd) == 0:
+        print("Belum ada koleksi DVD.")
+        return
+    
+    for id_dvd, dvd in koleksi_dvd.items():
+        print(f"ID: {id_dvd} | Judul: {dvd['judul']} | Genre: {dvd['genre']} | Tahun: {dvd['tahun']} | "
+              f"Harga sewa: Rp {dvd['harga']} | Stok: {dvd['stok']}")
+        print("======================================================================================================")
+
+def cari_dvd():
+    clear_terminal()
+    print("======================================================================================================")
+    print("                                             CARI DVD")
+    print("======================================================================================================")
+
+    try:
+        mencari = input_teks("Masukkan judul film yang dicari: ").lower()
+        hasil = {a: b for a, b in koleksi_dvd.items() if mencari in b["judul"].lower()}
+
+        if len(hasil) == 0:
+            raise KeyError(mencari)
+        
+    except ValueError as e:
+        print(f"\n{e}")
+
+    except KeyError:
+        print("\nDVD tidak ditemukan!")
+
+    else:
+        print()
+        for id_dvd, dvd in hasil.items():
+            print(f"ID: {id_dvd} | Judul: {dvd['judul']} | Genre: {dvd['genre']} | Tahun: {dvd['tahun']} | "
+                  f"Harga: Rp {dvd['harga']} | Stok: {dvd['stok']}")
+
+    finally:
+        enter()
+
+def tambah_dvd():
+    clear_terminal()
+    print("==========================================")
+    print("               TAMBAH DVD")
+    print("==========================================")
+
+    try:
+        id_dvd = input_teks("ID DVD: ").upper()
+
+        if id_dvd in koleksi_dvd:
+            raise ValueError("ID DVD sudah digunakan!")
+        
+        judul = input_teks("Judul film: ")
+        genre = input_teks("Genre: ")
+        tahun = input_angka("Tahun rilis: ", 1888)
+        harga = input_angka("Harga sewa (angka): Rp", 0)
+        stok = input_angka("Stok (angka): ", 0)
+
+    except ValueError as e:
+        print(f"\nGagal menambah DVD, {e}")
+
+    else:
+        koleksi_dvd[id_dvd] = {"judul": judul, "genre": genre, "tahun": tahun, "harga": harga, "stok": stok}
+        print("\nDVD berhasil ditambahkan!")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def ubah_dvd():
+    clear_terminal()
+    print("======================================================================================================")
+    print("                                         UBAH DATA DVD")
+    print("======================================================================================================")
+    tampilkan_koleksi()
+
+    try:
+        id_dvd = input_teks("Masukkan ID DVD yang ingin diubah: ").upper()
+        dvd = koleksi_dvd[id_dvd]
+        
+        print(f"\nJudul: {dvd['judul']} | Harga saat ini: Rp {dvd['harga']} | Stok saat ini: {dvd['stok']}")
+
+        harga_baru = input_angka("\nHarga baru (Enter jika tidak ingin diubah): ", 0, True)
+        stok_baru = input_angka("Stok baru (Enter jika tidak ingin diubah): ", 0, True)
+
+    except KeyError:
+        print("\nDVD tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\nGagal mengubah DVD, {e}")
+
+    else:
+        if harga_baru is not None:
+            dvd["harga"] = harga_baru
+        if stok_baru is not None:
+            dvd["stok"] = stok_baru
+        print("\nData DVD berhasil diperbarui!")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def hapus_dvd():
+    clear_terminal()
+    print("======================================================================================================")
+    print("                                           HAPUS DVD")
+    print("======================================================================================================")
+    tampilkan_koleksi()
+
+    try:
+        id_dvd = input_teks("ID DVD yang ingin dihapus: ").upper()
+
+        if id_dvd not in koleksi_dvd:
+            raise KeyError(id_dvd)
+        
+        for t in data_transaksi.values():
+            if t["id_dvd"] == id_dvd and t["status"] == "Dipinjam":
+                raise ValueError("DVD tidak bisa dihapus karena masih dipinjam!")
+            
+    except KeyError:
+        print("\nDVD tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\n{e}")
+
+    else:
+        if konfirmasi("Yakin hapus DVD ini?"):
+            del koleksi_dvd[id_dvd]
+            print("\nDVD berhasil dihapus!")
+
+        else:
+            print("\nPenghapusan dibatalkan.")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def tampilkan_penyewa():
+    if len(data_penyewa) == 0:
+        print("Belum ada penyewa.")
+        return
+    
+    for id_penyewa, penyewa in data_penyewa.items():
+        print(f"ID: {id_penyewa} | Nama: {penyewa['nama']} | Telepon: {penyewa['telepon']} | Alamat: {penyewa['alamat']}")
+        print("==========================================================")
+
+def ubah_penyewa():
+    clear_terminal()
+    print("==========================================================")
+    print("                    UBAH DATA PENYEWA")
+    print("==========================================================")
+    tampilkan_penyewa()
+
+    if len(data_penyewa) == 0:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+        return
+    
+    try:
+        id_penyewa = input_teks("ID penyewa yang ingin diubah: ").upper()
+        penyewa = data_penyewa[id_penyewa]
+        nama_baru = input("\nNama baru (Enter jika tidak ingin diubah): ").strip()
+        telepon_baru = input("Nomor telepon baru (Enter jika tidak ingin diubah): ").strip()
+        alamat_baru = input("Alamat baru (Enter jika tidak ingin diubah): ").strip()
+
+    except KeyError:
+        print("\nData penyewa tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\n{e}")
+
+    else:
+        if nama_baru != "":
+            penyewa["nama"] = nama_baru
+
+        if telepon_baru != "":
+            penyewa["telepon"] = telepon_baru
+
+        if alamat_baru != "":
+            penyewa["alamat"] = alamat_baru
+
+        print("\nData penyewa berhasil diperbarui!")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def hapus_penyewa():
+    clear_terminal()
+    print("==========================================================")
+    print("                    HAPUS DATA PENYEWA")
+    print("==========================================================")
+    tampilkan_penyewa()
+
+    if len(data_penyewa) == 0:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+        return
+    
+    try:
+        id_penyewa = input_teks("ID penyewa yang ingin dihapus: ").upper()
+        if id_penyewa not in data_penyewa:
+            raise KeyError(id_penyewa)
+        for t in data_transaksi.values():
+            if t["id_penyewa"] == id_penyewa and t["status"] == "Dipinjam":
+                raise ValueError("Penyewa masih memiliki transaksi aktif dan tidak bisa dihapus!")
+            
+    except KeyError:
+        print("\nData penyewa tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\n{e}")
+
+    else:
+        if konfirmasi("Yakin hapus data penyewa?"):
+            del data_penyewa[id_penyewa]
+            print("\nData penyewa berhasil dihapus!")
+
+        else:
+            print("\nPenghapusan dibatalkan.")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def tampilkan_transaksi(username=None):
+    ada = False
+
+    for no_transaksi, transaksi in data_transaksi.items():
+        if username is None or transaksi["username"] == username:
+            print("No:", no_transaksi, "| ID Penyewa:", transaksi["id_penyewa"], "| ID DVD:", transaksi["id_dvd"], "| Durasi sewa:", transaksi["durasi"], "hari", "| Status:", transaksi["status"], "| Jumlah:", transaksi["jumlah"])
+            print("==========================================================")
+            ada = True
+
+    if not ada:
+        print("Belum ada transaksi.")
+
+def pengembalian_dvd():
+    clear_terminal()
+    print("==========================================================")
+    print("                     PENGEMBALIAN DVD")
+    print("==========================================================")
+    tampilkan_transaksi()
+
+    if len(data_transaksi) == 0:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+        return
+    
+    try:
+        no_transaksi = input_teks("Nomor transaksi: ").upper()
+        transaksi = data_transaksi[no_transaksi]
+
+        if transaksi["status"] == "Dikembalikan":
+            raise ValueError("DVD pada transaksi ini sudah dikembalikan.")
+        
+    except KeyError:
+        print("\nNomor transaksi tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\n{e}")
+
+    else:
+        transaksi["status"] = "Dikembalikan"
+
+        if transaksi["id_dvd"] in koleksi_dvd:
+            koleksi_dvd[transaksi["id_dvd"]]["stok"] += transaksi["jumlah"]
+        print("\nPengembalian berhasil diproses. Stok DVD telah ditambah.")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def tambah_durasi():
+    clear_terminal()
+    print("==========================================================")
+    print("              MENAMBAH DURASI PEMINJAMAN DVD")
+    print("==========================================================")
+    tampilkan_transaksi()
+
+    if len(data_transaksi) == 0:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+        return
+    
+    try:
+        no_transaksi = input_teks("Nomor transaksi: ").upper()
+        transaksi = data_transaksi[no_transaksi]
+
+        if transaksi["status"] == "Dikembalikan":
+            raise ValueError("Durasi tidak bisa ditambah karena DVD sudah dikembalikan!")
+        
+        tambahan = input_angka("Tambahan durasi peminjaman (hari): ", 1)
+
+    except KeyError:
+        print("\nNomor transaksi tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\n{e}")
+
+    else:
+        durasi_lama = transaksi["durasi"]
+        transaksi["durasi"] = durasi_lama + tambahan
+        print("\nDurasi peminjaman berhasil ditambah!")
+        print("Durasi sebelumnya: ", durasi_lama, "hari")
+        print("Tambahan durasi: ", tambahan, "hari")
+        print("Total durasi: ", transaksi["durasi"], "hari")
+
+    finally:
+        enter("Tekan Enter untuk kembali ke menu admin...")
+
+def buat_id_penyewa():
+    global nomor_penyewa
+    id_baru = "Z" + str(nomor_penyewa)
+
+    if nomor_penyewa < 10:
+        id_baru = "Z00" + str(nomor_penyewa)
+
+    elif nomor_penyewa < 100:
+        id_baru = "Z0" + str(nomor_penyewa)
+
+    nomor_penyewa += 1
+    return id_baru
+
+
+def buat_id_transaksi():
+    global nomor_transaksi
+    id_baru = "Y" + str(nomor_transaksi)
+
+    if nomor_transaksi < 10:
+        id_baru = "Y00" + str(nomor_transaksi)
+
+    elif nomor_transaksi < 100:
+        id_baru = "Y0" + str(nomor_transaksi)
+
+    nomor_transaksi += 1
+    return id_baru
+
+def sewa_dvd(username):
+    clear_terminal()
+    print("======================================================================================================")
+    print("                                            SEWA DVD")
+    print("======================================================================================================")
+    tampilkan_koleksi()
+
+    try:
+        id_dvd = input_teks("ID DVD yang ingin disewa: ").upper()
+        dvd = koleksi_dvd[id_dvd]
+
+        print(f"\nJudul: {dvd['judul']}")
+        print("Harga sewa per DVD per hari: Rp", dvd["harga"])
+        print("Stok tersedia:", dvd["stok"])
+
+        jumlah = input_angka("\nJumlah DVD yang ingin disewa: ", 1)
+
+        if jumlah > dvd["stok"]:
+            raise ValueError("Stok DVD tidak cukup!")
+        
+        durasi = input_angka("Durasi sewa (hari): ", 1)
+        nama = input_teks("Nama lengkap: ")
+        telepon = input_teks("Nomor telepon: ")
+        alamat = input_teks("Alamat: ")
+
+    except KeyError:
+        print("\nDVD tidak ditemukan!")
+
+    except ValueError as e:
+        print(f"\nPenyewaan gagal, {e}")
+
+    else:
+        id_penyewa = buat_id_penyewa()
+        id_transaksi = buat_id_transaksi()
+
+        data_penyewa[id_penyewa] = {"nama": nama, "telepon": telepon, "alamat": alamat, "username": username}
+        data_transaksi[id_transaksi] = {
+            "id_penyewa": id_penyewa,
+            "id_dvd": id_dvd,
+            "harga": dvd["harga"],
+            "durasi": durasi,
+            "status": "Dipinjam",
+            "jumlah": jumlah,
+            "username": username
+        }
+
+        dvd["stok"] -= jumlah
+
+        print("\nPenyewaan berhasil!")
+        print("Nomor transaksi:", id_transaksi)
+        print("Durasi sewa:", durasi, "hari")
+        print("Total harga sewa: Rp", total_harga(dvd["harga"], jumlah, durasi))
+
+    finally:
+        enter()
+
+def menu_admin():
+    clear_terminal()
+    print("Anda login sebagai admin!")
+    enter("Tekan Enter untuk melanjutkan ke menu admin...")
+
+    while True:
+        clear_terminal()
+        print("=================================")
+        print("            MENU ADMIN")
+        print("=================================")
+        print("1. Lihat koleksi DVD")
+        print("2. Cari DVD berdasarkan judul")
+        print("3. Tambah DVD")
+        print("4. Ubah data DVD")
+        print("5. Hapus DVD")
+        print("6. Lihat data penyewa")
+        print("7. Ubah data penyewa")
+        print("8. Hapus data penyewa")
+        print("9. Lihat semua transaksi")
+        print("10. Pengembalian DVD")
+        print("11. Tambah durasi peminjaman DVD")
+        print("12. Logout")
+        print("=================================")
+        pilihan = input("Pilih menu: ").strip()
+
+        if pilihan == "1":
+            clear_terminal()
+            print("======================================================================================================")
+            print("                                           KOLEKSI DVD")
+            print("======================================================================================================")
+            tampilkan_koleksi()
+            enter("Tekan Enter untuk kembali ke menu admin...")
+
+        elif pilihan == "2":
+            cari_dvd()
+
+        elif pilihan == "3":
+            tambah_dvd()
+
+        elif pilihan == "4":
+            ubah_dvd()
+
+        elif pilihan == "5":
+            hapus_dvd()
+
+        elif pilihan == "6":
+            clear_terminal()
+            print("==========================================================")
+            print("                      DATA PENYEWA")
+            print("==========================================================")
+            tampilkan_penyewa()
+            enter("Tekan Enter untuk kembali ke menu admin...")
+
+        elif pilihan == "7":
+            ubah_penyewa()
+
+        elif pilihan == "8":
+            hapus_penyewa()
+
+        elif pilihan == "9":
+            clear_terminal()
+            print("==========================================================")
+            print("                     SEMUA TRANSAKSI")
+            print("==========================================================")
+            tampilkan_transaksi()
+            enter("Tekan Enter untuk kembali ke menu admin...")
+            
+        elif pilihan == "10":
+            pengembalian_dvd()
+
+        elif pilihan == "11":
+            tambah_durasi()
+
+        elif pilihan == "12":
+            clear_terminal()
+            print("Logout berhasil.")
+            enter("Tekan Enter untuk melanjutkan...")
+            break
+
+        else:
+            print("Opsi tidak valid! Masukkan pilihan 1 sampai 12.")
+            enter("Tekan Enter untuk mencoba lagi...")
+
+def menu_pengguna(username):
+    while True:
+        clear_terminal()
+        print("=============================")
+        print("        MENU PENGGUNA")
+        print("=============================")
+        print("1. Lihat koleksi DVD")
+        print("2. Cari DVD")
+        print("3. Sewa DVD")
+        print("4. Lihat transaksi saya")
+        print("5. Logout")
+        pilihan = input("Pilih menu: ").strip()
+
+        if pilihan == "1":
+            clear_terminal()
+            print("======================================================================================================")
+            print("                                           KOLEKSI DVD")
+            print("======================================================================================================")
+            tampilkan_koleksi()
+            enter()
+
+        elif pilihan == "2":
+            cari_dvd()
+
+        elif pilihan == "3":
+            sewa_dvd(username)
+
+        elif pilihan == "4":
+            clear_terminal()
+            print("==========================================================")
+            print("                     TRANSAKSI SAYA")
+            print("==========================================================")
+            tampilkan_transaksi(username)
+            enter()
+
+        elif pilihan == "5":
+            clear_terminal()
+            print("Logout berhasil.")
+            enter("Tekan Enter untuk melanjutkan...")
+            break
+
+        else:
+            print("\nOpsi tidak valid! Masukkan pilihan 1 sampai 5.")
+            enter("Tekan Enter untuk mencoba lagi...")
+
+def main():
+    try:
+        while True:
+            clear_terminal()
+            print("======================================")
+            print("        RENTAL DVD 'KANSASISU'")
+            print("======================================")
+            print("1. Register")
+            print("2. Login")
+            print("3. Keluar")
+            print("======================================")
+
+            pilihan = input("Pilih menu: ").strip()
+
+            if pilihan == "1":
+                register()
+
+            elif pilihan == "2":
+                hasil = login()
+
+                if hasil is not None:
+                    username, peran = hasil
+
+                    if peran == "admin":
+                        menu_admin()
+
+                    else:
+                        menu_pengguna(username)
+
+            elif pilihan == "3":
+                break
+
+            else:
+                print("Opsi tidak valid! Masukkan pilihan 1 sampai 3.")
+                enter("Tekan Enter untuk mencoba lagi...")
+
+    finally:
+        clear_terminal()
+        print("Terima kasih telah mengakses program kami!")
+
+main()
